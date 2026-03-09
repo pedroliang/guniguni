@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guni Guni Gelato - Menu Online</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="brand">
+                <img src="logo.png" alt="Guni Guni Gelato" class="brand-logo">
+                <h1>Guni Guni</h1>
+            </div>
+
+            <!-- Navegação principal -->
+            <nav class="main-nav">
+                <button class="nav-btn active" data-view="menu" id="navMenu">
+                    <i class="ph ph-storefront"></i> Menu
+                </button>
+                <button class="nav-btn" data-view="admin" id="navAdmin">
+                    <i class="ph ph-gear"></i> Cadastro
+                </button>
+            </nav>
+
+            <button class="cart-trigger" id="cartTrigger">
+                <i class="ph ph-shopping-bag"></i>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </button>
+        </header>
+
+        <!-- ========== MENU VIEW ========== -->
+        <main class="content-area view-section active" id="menuView">
+            <!-- Busca -->
+            <div class="search-bar-wrapper">
+                <div class="search-bar">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="searchInput" placeholder="Buscar no menu...">
+                </div>
+            </div>
+
+            <!-- Categorias -->
+            <section class="categories-section">
+                <div class="category-pills" id="categoryPills">
+                    <button class="category-pill active" data-category="all">Todos</button>
+                    <button class="category-pill" data-category="promocoes">Promoções</button>
+                    <button class="category-pill" data-category="novidades">Novidades</button>
+                    <button class="category-pill" data-category="gelatos">Gelatos</button>
+                    <button class="category-pill" data-category="picoles">Picolés</button>
+                    <button class="category-pill" data-category="bolo-sorvete">Bolo de Sorvete</button>
+                </div>
+            </section>
+
+            <!-- Menu Grid -->
+            <section class="menu-section">
+                <h2 class="section-title" id="currentCategoryTitle">Nosso Menu</h2>
+                <div class="menu-grid" id="menuGrid">
+                    <!-- Produtos injetados via JS -->
+                </div>
+                <div class="empty-menu-msg" id="emptyMenuMsg" style="display:none;">
+                    <i class="ph ph-ice-cream"></i>
+                    <p>Nenhum produto cadastrado ainda. Vá em <strong>Cadastro</strong> para adicionar produtos!</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- ========== ADMIN VIEW ========== -->
+        <main class="content-area view-section" id="adminView">
+            <div class="admin-container">
+                <h2 class="section-title">Cadastrar Novo Produto</h2>
+
+                <form class="product-form" id="productForm">
+                    <div class="form-split">
+                        <!-- Lado Esquerdo: Foto -->
+                        <div class="form-left">
+                            <div class="image-upload-area" id="imageUploadArea">
+                                <input type="file" id="productImage" accept="image/*" hidden>
+                                <div class="upload-placeholder" id="uploadPlaceholder">
+                                    <i class="ph ph-camera-plus"></i>
+                                    <p>Clique ou arraste para enviar uma foto</p>
+                                </div>
+                                <img id="imagePreview" class="image-preview" style="display:none;" alt="Preview">
+                            </div>
+                        </div>
+
+                        <!-- Lado Direito: Dados -->
+                        <div class="form-right">
+                            <div class="form-group">
+                                <label for="productName">Nome do Produto</label>
+                                <input type="text" id="productName" placeholder="Ex: Gelato de Pistache" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="productDesc">Descrição</label>
+                                <textarea id="productDesc" rows="3" placeholder="Descreva o produto..."
+                                    required></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="productPrice">Preço (R$)</label>
+                                    <input type="number" id="productPrice" step="0.01" min="0" placeholder="0,00"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="productCategory">Categoria</label>
+                                    <select id="productCategory" required>
+                                        <option value="promocoes">Promoções</option>
+                                        <option value="novidades">Novidades</option>
+                                        <option value="gelatos">Gelatos</option>
+                                        <option value="picoles">Picolés</option>
+                                        <option value="bolo-sorvete">Bolo de Sorvete</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="productNovidade">
+                                    <span class="checkmark"></span>
+                                    <span>Marcar como <strong>Novidade</strong></span>
+                                </label>
+                            </div>
+
+                            <button type="submit" class="submit-btn">
+                                <i class="ph ph-plus-circle"></i> Cadastrar Produto
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Lista de Produtos Cadastrados -->
+                <div class="admin-products-section">
+                    <h3 class="section-subtitle">Produtos Cadastrados</h3>
+                    <div class="admin-products-list" id="adminProductsList">
+                        <!-- Lista dos produtos cadastrados -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Cart Sidebar (Offcanvas) -->
+    <div class="cart-overlay" id="cartOverlay"></div>
+    <aside class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Seu Pedido</h2>
+            <button class="close-cart" id="closeCart">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+
+        <div class="cart-items" id="cartItems">
+            <div class="empty-cart-msg">Seu carrinho está vazio.</div>
+        </div>
+
+        <div class="cart-footer">
+            <div class="cart-total-row">
+                <span>Total:</span>
+                <span class="total-amount" id="cartTotal">R$ 0,00</span>
+            </div>
+            <button class="checkout-btn" id="checkoutBtn" disabled>
+                Finalizar Pedido <i class="ph ph-arrow-right"></i>
+            </button>
+        </div>
+    </aside>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

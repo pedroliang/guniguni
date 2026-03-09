@@ -1,0 +1,7 @@
+# Arquivos temporários
+screen1.html
+screen1_api.json
+
+# OS
+.DS_Store
+Thumbs.db
