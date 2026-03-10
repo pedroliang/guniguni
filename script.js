@@ -17,7 +17,12 @@ async function fetchProducts() {
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+            if (error.code === 'PGRST116' || error.message.includes('column') || error.message.includes('relation')) {
+                console.error('ERRO CRÍTICO: Tabela "products" não encontrada no Supabase. Por favor, execute o script SQL setup.sql no painel do Supabase.');
+            }
+            throw error;
+        }
         products = data || [];
         return products;
     } catch (err) {
@@ -33,7 +38,14 @@ async function saveProduct(product) {
             .from('products')
             .insert([product]);
 
-        if (error) throw error;
+        if (error) {
+            if (error.code === 'PGRST116' || error.message.includes('relation "public.products" does not exist')) {
+                const msg = 'ERRO: A tabela "products" não existe no seu Supabase. Você precisa rodar o script setup.sql no painel do Supabase.';
+                console.error(msg);
+                alert(msg);
+            }
+            throw error;
+        }
         return data;
     } catch (err) {
         console.error('Erro ao salvar produto:', err.message);
