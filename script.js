@@ -60,7 +60,6 @@ const adminView = document.getElementById('adminView');
 const menuGrid = document.getElementById('menuGrid');
 const categoryPills = document.querySelectorAll('.category-pill');
 const searchInput = document.getElementById('searchInput');
-const currentCategoryTitle = document.getElementById('currentCategoryTitle');
 const emptyMenuMsg = document.getElementById('emptyMenuMsg');
 
 // Carrinho
@@ -199,7 +198,6 @@ categoryPills.forEach(pill => {
         categoryPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         currentCategory = pill.dataset.category;
-        currentCategoryTitle.textContent = currentCategory === 'all' ? 'Nosso Menu' : pill.textContent;
         filterProducts();
     });
 });
