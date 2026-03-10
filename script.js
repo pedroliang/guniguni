@@ -147,6 +147,9 @@ function renderProducts(productsToRender) {
             ? '<div class="product-badge-novidade">Novidade</div>'
             : '';
 
+        // Prefixo "A partir de"
+        const startingPricePrefix = product.is_starting_price ? '<span class="price-prefix">A partir de </span>' : '';
+
         productCard.innerHTML = `
             <div class="product-image-wrapper">
                 ${novidadeHtml}
@@ -155,7 +158,7 @@ function renderProducts(productsToRender) {
             <div class="product-info">
                 <div class="product-header">
                     <h3 class="product-name">${product.name}</h3>
-                    <span class="product-price">${formatMoney(product.price)}</span>
+                    <span class="product-price">${startingPricePrefix}${formatMoney(product.price)}</span>
                 </div>
                 <p class="product-desc">${product.description}</p>
                 <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">
@@ -364,6 +367,7 @@ productForm.addEventListener('submit', async (e) => {
     const price = parseFloat(document.getElementById('productPrice').value);
     const category = document.getElementById('productCategory').value;
     const novidade = document.getElementById('productNovidade').checked;
+    const is_starting_price = document.getElementById('productStartingPrice').checked;
 
     if (!name || !description || isNaN(price) || price <= 0) {
         alert('Por favor, preencha todos os campos corretamente.');
@@ -385,7 +389,8 @@ productForm.addEventListener('submit', async (e) => {
         price,
         category,
         image: currentImageBase64,
-        novidade
+        novidade,
+        is_starting_price
     };
 
     try {
@@ -425,6 +430,10 @@ function renderAdminList() {
             ? '<span class="novidade-tag">Novidade</span>'
             : '';
 
+        const startingTag = product.is_starting_price
+            ? '<span class="starting-tag">A partir de</span>'
+            : '';
+
         item.innerHTML = `
             <img src="${product.image}" alt="${product.name}" class="admin-product-img">
             <div class="admin-product-info">
@@ -432,6 +441,7 @@ function renderAdminList() {
                 <div class="admin-product-meta">
                     <span class="admin-product-price">${formatMoney(product.price)}</span>
                     ${novidadeTag}
+                    ${startingTag}
                 </div>
             </div>
             <button class="admin-delete-btn" onclick="deleteProduct('${product.id}')" title="Excluir produto">
