@@ -1,23 +1,48 @@
 // ============================================================
-// Estado e Armazenamento (localStorage)
+// Configuração Supabase
+// ============================================================
+const SUPABASE_URL = 'https://vnyplgxevpqegvhykwlj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZueXBsZ3hldnBxZWd2aHlrd2xqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMDI0NjYsImV4cCI6MjA4ODU3ODQ2Nn0.QYJz1arSBGHOrVtqyC769i2Srtj8qvRWtb4dRDohBXA';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ============================================================
+// Estado e Armazenamento
 // ============================================================
 
-// Chave para localStorage
-const STORAGE_KEY = 'guniguni_products';
+// Carregar produtos do Supabase
+async function fetchProducts() {
+    try {
+        const { data, error } = await _supabase
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-// Carregar produtos do localStorage (ou array vazio)
-function loadProducts() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    return data ? JSON.parse(data) : [];
+        if (error) throw error;
+        products = data || [];
+        return products;
+    } catch (err) {
+        console.error('Erro ao carregar produtos:', err.message);
+        return [];
+    }
 }
 
-// Salvar produtos no localStorage
-function saveProducts(products) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+// Salvar produto no Supabase
+async function saveProduct(product) {
+    try {
+        const { data, error } = await _supabase
+            .from('products')
+            .insert([product]);
+
+        if (error) throw error;
+        return data;
+    } catch (err) {
+        console.error('Erro ao salvar produto:', err.message);
+        throw err;
+    }
 }
 
 // Estado global
-let products = loadProducts();
+let products = [];
 let cart = [];
 let currentCategory = 'all';
 
@@ -79,12 +104,13 @@ function switchView(view) {
         adminView.classList.remove('active');
         navMenu.classList.add('active');
         navAdmin.classList.remove('active');
+        refreshData();
     } else {
         adminView.classList.add('active');
         menuView.classList.remove('active');
         navAdmin.classList.add('active');
         navMenu.classList.remove('active');
-        renderAdminList();
+        refreshData();
     }
 }
 
@@ -330,7 +356,7 @@ function handleImageFile(file) {
 }
 
 // Submeter formulário
-productForm.addEventListener('submit', (e) => {
+productForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const name = document.getElementById('productName').value.trim();
@@ -349,8 +375,11 @@ productForm.addEventListener('submit', (e) => {
         return;
     }
 
+    const submitBtn = productForm.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Enviando...';
+
     const newProduct = {
-        id: generateId(),
         name,
         description,
         price,
@@ -359,20 +388,25 @@ productForm.addEventListener('submit', (e) => {
         novidade
     };
 
-    products.push(newProduct);
-    saveProducts(products);
+    try {
+        await saveProduct(newProduct);
 
-    // Resetar formulário
-    productForm.reset();
-    currentImageBase64 = '';
-    imagePreview.style.display = 'none';
-    uploadPlaceholder.style.display = 'block';
+        // Resetar formulário
+        productForm.reset();
+        currentImageBase64 = '';
+        imagePreview.style.display = 'none';
+        uploadPlaceholder.style.display = 'block';
 
-    // Atualizar listas
-    renderAdminList();
-    filterProducts();
+        // Atualizar listas
+        await refreshData();
 
-    alert('Produto cadastrado com sucesso! ✅');
+        alert('Produto cadastrado com sucesso! ✅');
+    } catch (err) {
+        alert('Erro ao cadastrar produto. Verifique sua conexão.');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ph ph-plus-circle"></i> Cadastrar Produto';
+    }
 });
 
 // Renderizar lista de produtos no Admin
@@ -409,18 +443,37 @@ function renderAdminList() {
 }
 
 // Excluir produto
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (confirm('Tem certeza que deseja excluir este produto?')) {
-        products = products.filter(p => p.id !== productId);
-        saveProducts(products);
-        renderAdminList();
-        filterProducts();
+        try {
+            const { error } = await _supabase
+                .from('products')
+                .delete()
+                .eq('id', productId);
+
+            if (error) throw error;
+            await refreshData();
+        } catch (err) {
+            alert('Erro ao excluir produto.');
+        }
     }
+}
+
+// Atualizar dados e interface
+async function refreshData() {
+    await fetchProducts();
+    renderAdminList();
+    filterProducts();
 }
 
 // ============================================================
 // Inicialização
 // ============================================================
 
-filterProducts();
-updateCartUI();
+async function init() {
+    await fetchProducts();
+    filterProducts();
+    updateCartUI();
+}
+
+init();
