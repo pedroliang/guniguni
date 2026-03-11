@@ -1275,14 +1275,7 @@ body {
     display: flex;
     gap: 8px;
     z-index: 10;
-    opacity: 0;
-    transform: translateY(-10px);
     transition: var(--transition-normal);
-}
-
-.product-card:hover .product-admin-actions {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 .admin-action-btn {
