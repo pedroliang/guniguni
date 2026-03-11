@@ -65,44 +65,35 @@ let currentCategory = 'all';
 // Navegação
 const navMenu = document.getElementById('navMenu');
 const navAdmin = document.getElementById('navAdmin');
+const loginTrigger = document.getElementById('loginTrigger');
+const logoutBtn = document.getElementById('logoutBtn');
 const menuView = document.getElementById('menuView');
 const adminView = document.getElementById('adminView');
 
-// Menu
-const menuGrid = document.getElementById('menuGrid');
-const categoryPills = document.querySelectorAll('.category-pill');
-const searchInput = document.getElementById('searchInput');
-const emptyMenuMsg = document.getElementById('emptyMenuMsg');
-
-// Carrinho
-const cartTrigger = document.getElementById('cartTrigger');
-const cartOverlay = document.getElementById('cartOverlay');
-const cartSidebar = document.getElementById('cartSidebar');
-const closeCartBtn = document.getElementById('closeCart');
-const cartItemsContainer = document.getElementById('cartItems');
-const cartBadge = document.getElementById('cartBadge');
-const cartTotalElement = document.getElementById('cartTotal');
-const checkoutBtn = document.getElementById('checkoutBtn');
-
-// Admin / Cadastro
-const productForm = document.getElementById('productForm');
-const imageUploadArea = document.getElementById('imageUploadArea');
-const productImageInput = document.getElementById('productImage');
-const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-const imagePreview = document.getElementById('imagePreview');
-const adminProductsList = document.getElementById('adminProductsList');
+// Login Modal
+const loginModalOverlay = document.getElementById('loginModalOverlay');
+const closeLoginBtn = document.getElementById('closeLogin');
+const loginForm = document.getElementById('loginForm');
 
 // ============================================================
-// Utilitários
+// Estado de Autenticação
 // ============================================================
 
-const formatMoney = (amount) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount);
-};
+let isAuthenticated = localStorage.getItem('guni_auth') === 'true';
 
-// Gerar ID único
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+function updateAuthUI() {
+    if (isAuthenticated) {
+        logoutBtn.style.display = 'flex';
+        navAdmin.style.display = 'flex';
+        loginTrigger.style.display = 'none';
+    } else {
+        logoutBtn.style.display = 'none';
+        navAdmin.style.display = 'none';
+        loginTrigger.style.display = 'flex';
+        if (adminView.classList.contains('active')) {
+            switchView('menu');
+        }
+    }
 }
 
 // ============================================================
@@ -110,6 +101,11 @@ function generateId() {
 // ============================================================
 
 function switchView(view) {
+    if (view === 'admin' && !isAuthenticated) {
+        openLoginModal();
+        return;
+    }
+
     if (view === 'menu') {
         menuView.classList.add('active');
         adminView.classList.remove('active');
@@ -125,8 +121,51 @@ function switchView(view) {
     }
 }
 
+function openLoginModal() {
+    loginModalOverlay.classList.add('active');
+}
+
+function closeLoginModal() {
+    loginModalOverlay.classList.remove('active');
+    loginForm.reset();
+}
+
+// Event Listeners de Autenticação
+loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = document.getElementById('loginUser').value;
+    const pass = document.getElementById('loginPass').value;
+
+    if (user === 'pabloadm' && pass === 'guniguni*!') {
+        isAuthenticated = true;
+        localStorage.setItem('guni_auth', 'true');
+        closeLoginModal();
+        updateAuthUI();
+        switchView('admin');
+    } else {
+        alert('Usuário ou senha incorretos!');
+    }
+});
+
+logoutBtn.addEventListener('click', () => {
+    if (confirm('Deseja realmente sair?')) {
+        isAuthenticated = false;
+        localStorage.removeItem('guni_auth');
+        updateAuthUI();
+    }
+});
+
+closeLoginBtn.addEventListener('click', closeLoginModal);
+loginModalOverlay.addEventListener('click', (e) => {
+    if (e.target === loginModalOverlay) closeLoginModal();
+});
+
 navMenu.addEventListener('click', () => switchView('menu'));
 navAdmin.addEventListener('click', () => switchView('admin'));
+loginTrigger.addEventListener('click', openLoginModal);
+
+// Chamar atualização inicial da UI de autenticação
+updateAuthUI();
 
 // ============================================================
 // Renderizar Produtos no Menu
