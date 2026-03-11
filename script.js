@@ -53,10 +53,10 @@ async function saveProduct(product) {
     }
 }
 
-// Estado global
 let products = [];
 let cart = [];
 let currentCategory = 'all';
+let editingProductId = null; // ID do produto sendo editado
 
 // ============================================================
 // Referências do DOM
@@ -122,6 +122,10 @@ function updateAuthUI() {
         if (adminView.classList.contains('active')) {
             switchView('menu');
         }
+    }
+    // Re-renderizar produtos para mostrar/esconder botões de admin
+    if (products.length > 0) {
+        filterProducts();
     }
 }
 
@@ -226,6 +230,17 @@ function renderProducts(productsToRender) {
                 ${product.novidade ? '<span class="product-badge-novidade">Novidade</span>' : ''}
                 ${product.is_esgotado ? '<span class="product-badge-esgotado">Esgotado</span>' : ''}
                 <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy">
+                
+                ${isAuthenticated ? `
+                    <div class="product-admin-actions" onclick="event.stopPropagation()">
+                        <button class="admin-action-btn edit" onclick="startEditProduct('${product.id}')" title="Editar produto">
+                            <i class="ph ph-pencil-simple"></i>
+                        </button>
+                        <button class="admin-action-btn delete" onclick="deleteProduct('${product.id}')" title="Excluir produto">
+                            <i class="ph ph-trash"></i>
+                        </button>
+                    </div>
+                ` : ''}
             </div>
             <div class="product-info">
                 <div class="product-header">
@@ -358,7 +373,7 @@ function updateCartUI() {
                 </div>
             </div>
         `;
-        cartItemsContainer.appendChild(cartItemEl);
+        cartItems.appendChild(cartItemEl);
     });
 }
 
@@ -457,9 +472,9 @@ productForm.addEventListener('submit', async (e) => {
 
     const submitBtn = productForm.querySelector('.submit-btn');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ph ph-circle-notch animate-spin"></i> Enviando...';
+    submitBtn.innerHTML = `<i class="ph ph-circle-notch animate-spin"></i> ${editingProductId ? 'Salvando...' : 'Enviando...'}`;
 
-    const newProduct = {
+    const productData = {
         name,
         description,
         price,
@@ -471,13 +486,20 @@ productForm.addEventListener('submit', async (e) => {
     };
 
     try {
-        await saveProduct(newProduct);
+        if (editingProductId) {
+            const { error } = await _supabase
+                .from('products')
+                .update(productData)
+                .eq('id', editingProductId);
+            if (error) throw error;
+        } else {
+            await saveProduct(productData);
+        }
 
         // Resetar formulário
         productForm.reset();
-        document.getElementById('productNovidade').checked = false;
-        document.getElementById('productStartingPrice').checked = false;
-        document.getElementById('productEsgotado').checked = false;
+        cancelEdit(); // Limpar modo edição
+        
         currentImageBase64 = '';
         imagePreview.style.display = 'none';
         uploadPlaceholder.style.display = 'block';
@@ -485,9 +507,14 @@ productForm.addEventListener('submit', async (e) => {
         // Atualizar listas
         await refreshData();
 
-        alert('Produto cadastrado com sucesso! ✅');
+        alert(editingProductId ? 'Produto atualizado com sucesso! ✅' : 'Produto cadastrado com sucesso! ✅');
+        
+        // Se estava editando, voltar para o menu para ver o resultado
+        if (editingProductId) {
+            switchView('menu');
+        }
     } catch (err) {
-        alert('Erro ao cadastrar produto. Verifique sua conexão.');
+        alert('Erro ao processar produto. Verifique sua conexão.');
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="ph ph-plus-circle"></i> Cadastrar Produto';
@@ -531,6 +558,63 @@ function renderAdminList() {
         `;
         adminProductsList.appendChild(item);
     });
+}
+
+// Iniciar edição de produto
+function startEditProduct(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    editingProductId = productId;
+    
+    // Preencher campos
+    document.getElementById('productName').value = product.name;
+    document.getElementById('productDesc').value = product.description;
+    document.getElementById('productPrice').value = product.price;
+    document.getElementById('productCategory').value = product.category;
+    document.getElementById('productNovidade').checked = product.novidade;
+    document.getElementById('productStartingPrice').checked = product.is_starting_price;
+    document.getElementById('productEsgotado').checked = product.is_esgotado;
+    
+    // Imagem
+    currentImageBase64 = product.image;
+    imagePreview.src = product.image;
+    imagePreview.style.display = 'block';
+    uploadPlaceholder.style.display = 'none';
+    
+    // UI mudar texto do botão
+    const submitBtn = productForm.querySelector('.submit-btn');
+    submitBtn.innerHTML = '<i class="ph ph-check-circle"></i> Salvar Alterações';
+    
+    // Adicionar botão de cancelar se não existir
+    if (!document.getElementById('cancelEditBtn')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'cancelEditBtn';
+        cancelBtn.className = 'nav-btn';
+        cancelBtn.style.marginTop = '1rem';
+        cancelBtn.style.width = '100%';
+        cancelBtn.innerHTML = '<i class="ph ph-x-circle"></i> Cancelar Edição';
+        cancelBtn.onclick = cancelEdit;
+        submitBtn.parentNode.appendChild(cancelBtn);
+    }
+
+    switchView('admin');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit() {
+    editingProductId = null;
+    productForm.reset();
+    currentImageBase64 = '';
+    imagePreview.style.display = 'none';
+    uploadPlaceholder.style.display = 'block';
+    
+    const submitBtn = productForm.querySelector('.submit-btn');
+    submitBtn.innerHTML = '<i class="ph ph-plus-circle"></i> Cadastrar Produto';
+    
+    const cancelBtn = document.getElementById('cancelEditBtn');
+    if (cancelBtn) cancelBtn.remove();
 }
 
 // Excluir produto
