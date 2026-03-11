@@ -386,6 +386,45 @@ body {
     z-index: 2;
 }
 
+/* Faixa de Esgotado */
+.product-badge-esgotado {
+    position: absolute;
+    top: 14px;
+    right: -35px;
+    background: #6c757d;
+    color: #fff;
+    padding: 0.3rem 2.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transform: rotate(45deg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 2;
+}
+
+/* Efeito de Embaçado para Esgotado */
+.product-card.esgotado .product-image {
+    filter: blur(5px) grayscale(0.5);
+    opacity: 0.8;
+}
+
+.product-card.esgotado .add-to-cart-btn {
+    background-color: #e9ecef !important;
+    color: #adb5bd !important;
+    cursor: not-allowed;
+    border-color: #dee2e6 !important;
+}
+
+.checkmark-esgotado {
+    border-color: #6c757d !important;
+}
+
+.checkbox-label input[type="checkbox"]:checked+.checkmark-esgotado {
+    background: #6c757d !important;
+    border-color: #6c757d !important;
+}
+
 .product-info {
     padding: 1.25rem;
     display: flex;

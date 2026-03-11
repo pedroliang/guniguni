@@ -190,29 +190,26 @@ function renderProducts(productsToRender) {
 
     productsToRender.forEach(product => {
         const productCard = document.createElement('article');
-        productCard.className = 'product-card';
-
-        // Faixa de novidade
-        const novidadeHtml = product.novidade
-            ? '<div class="product-badge-novidade">Novidade</div>'
-            : '';
-
-        // Prefixo "A partir de"
-        const startingPricePrefix = product.is_starting_price ? '<span class="price-prefix">A partir de </span>' : '';
+        productCard.className = `product-card ${product.is_esgotado ? 'esgotado' : ''}`;
 
         productCard.innerHTML = `
             <div class="product-image-wrapper">
-                ${novidadeHtml}
+                ${product.novidade ? '<span class="product-badge-novidade">Novidade</span>' : ''}
+                ${product.is_esgotado ? '<span class="product-badge-esgotado">Esgotado</span>' : ''}
                 <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy">
             </div>
             <div class="product-info">
                 <div class="product-header">
                     <h3 class="product-name">${product.name}</h3>
-                    <span class="product-price">${startingPricePrefix}${formatMoney(product.price)}</span>
+                    <span class="product-price">
+                        ${product.is_starting_price ? '<span class="price-prefix">A partir de</span>' : ''}
+                        R$ ${product.price.toFixed(2).replace('.', ',')}
+                    </span>
                 </div>
                 <p class="product-desc">${product.description}</p>
-                <button class="add-to-cart-btn" onclick="addToCart('${product.id}')">
-                    <i class="ph ph-shopping-cart"></i> Adicionar
+                <button class="add-to-cart-btn" onclick="addToCart('${product.id}')" ${product.is_esgotado ? 'disabled' : ''}>
+                    <i class="ph ph-plus-circle"></i>
+                    ${product.is_esgotado ? 'Indisponível' : 'Adicionar'}
                 </button>
             </div>
         `;
@@ -417,6 +414,7 @@ productForm.addEventListener('submit', async (e) => {
     const category = document.getElementById('productCategory').value;
     const novidade = document.getElementById('productNovidade').checked;
     const is_starting_price = document.getElementById('productStartingPrice').checked;
+    const is_esgotado = document.getElementById('productEsgotado').checked;
 
     if (!name || !description || isNaN(price) || price <= 0) {
         alert('Por favor, preencha todos os campos corretamente.');
@@ -439,7 +437,8 @@ productForm.addEventListener('submit', async (e) => {
         category,
         image: currentImageBase64,
         novidade,
-        is_starting_price
+        is_starting_price,
+        is_esgotado
     };
 
     try {
@@ -447,6 +446,9 @@ productForm.addEventListener('submit', async (e) => {
 
         // Resetar formulário
         productForm.reset();
+        document.getElementById('productNovidade').checked = false;
+        document.getElementById('productStartingPrice').checked = false;
+        document.getElementById('productEsgotado').checked = false;
         currentImageBase64 = '';
         imagePreview.style.display = 'none';
         uploadPlaceholder.style.display = 'block';
@@ -488,9 +490,10 @@ function renderAdminList() {
             <div class="admin-product-info">
                 <div class="admin-product-name">${product.name}</div>
                 <div class="admin-product-meta">
-                    <span class="admin-product-price">${formatMoney(product.price)}</span>
-                    ${novidadeTag}
-                    ${startingTag}
+                    <span class="admin-product-category">${product.category}</span>
+                    <span class="admin-product-price">R$ ${product.price.toFixed(2)}</span>
+                    ${product.novidade ? '<span class="novidade-tag">Novidade</span>' : ''}
+                    ${product.is_esgotado ? '<span class="novidade-tag" style="background:#6c757d">Esgotado</span>' : ''}
                 </div>
             </div>
             <button class="admin-delete-btn" onclick="deleteProduct('${product.id}')" title="Excluir produto">
