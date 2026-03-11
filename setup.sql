@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     image TEXT, -- Armazena a string Base64 ou URL
     novidade BOOLEAN DEFAULT false,
     is_starting_price BOOLEAN DEFAULT false,
+    is_esgotado BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

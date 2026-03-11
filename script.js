@@ -70,6 +70,35 @@ const logoutBtn = document.getElementById('logoutBtn');
 const menuView = document.getElementById('menuView');
 const adminView = document.getElementById('adminView');
 
+// Interface do Menu
+const searchInput = document.getElementById('searchInput');
+const menuGrid = document.getElementById('menuGrid');
+const emptyMenuMsg = document.getElementById('emptyMenuMsg');
+const categoryPills = document.querySelectorAll('.category-pill');
+
+// Carrinho
+const cartTrigger = document.getElementById('cartTrigger');
+const cartBadge = document.getElementById('cartBadge');
+const cartSidebar = document.getElementById('cartSidebar');
+const cartOverlay = document.getElementById('cartOverlay');
+const closeCart = document.getElementById('closeCart');
+const cartItems = document.getElementById('cartItems');
+const cartTotal = document.getElementById('cartTotal');
+const checkoutBtn = document.getElementById('checkoutBtn');
+
+// Cadastro (Admin)
+const productForm = document.getElementById('productForm');
+const imageUploadArea = document.getElementById('imageUploadArea');
+const productImage = document.getElementById('productImage');
+const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+const imagePreview = document.getElementById('imagePreview');
+const adminProductsList = document.getElementById('adminProductsList');
+
+// Lightbox
+const lightboxOverlay = document.getElementById('lightboxOverlay');
+const lightboxImg = document.getElementById('lightboxImg');
+const closeLightbox = document.getElementById('closeLightbox');
+
 // Login Modal
 const loginModalOverlay = document.getElementById('loginModalOverlay');
 const closeLoginBtn = document.getElementById('closeLogin');
@@ -193,7 +222,7 @@ function renderProducts(productsToRender) {
         productCard.className = `product-card ${product.is_esgotado ? 'esgotado' : ''}`;
 
         productCard.innerHTML = `
-            <div class="product-image-wrapper">
+            <div class="product-image-wrapper" onclick="openLightbox('${product.image}')">
                 ${product.novidade ? '<span class="product-badge-novidade">Novidade</span>' : ''}
                 ${product.is_esgotado ? '<span class="product-badge-esgotado">Esgotado</span>' : ''}
                 <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy">
@@ -294,15 +323,15 @@ function updateCartUI() {
     const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     cartBadge.textContent = totalItems;
-    cartTotalElement.textContent = formatMoney(totalPrice);
+    cartTotal.textContent = formatMoney(totalPrice);
     checkoutBtn.disabled = cart.length === 0;
 
     if (cart.length === 0) {
-        cartItemsContainer.innerHTML = '<div class="empty-cart-msg">Seu carrinho está vazio.</div>';
+        cartItems.innerHTML = '<div class="empty-cart-msg">Seu carrinho está vazio.</div>';
         return;
     }
 
-    cartItemsContainer.innerHTML = '';
+    cartItems.innerHTML = '';
     cart.forEach(item => {
         const cartItemEl = document.createElement('div');
         cartItemEl.className = 'cart-item';
@@ -340,7 +369,7 @@ function toggleCart() {
 }
 
 cartTrigger.addEventListener('click', toggleCart);
-closeCartBtn.addEventListener('click', toggleCart);
+closeCart.addEventListener('click', toggleCart);
 cartOverlay.addEventListener('click', toggleCart);
 
 checkoutBtn.addEventListener('click', () => {
@@ -361,7 +390,7 @@ let currentImageBase64 = '';
 
 // Clicar na área de upload abre o seletor de arquivo
 imageUploadArea.addEventListener('click', () => {
-    productImageInput.click();
+    productImage.click();
 });
 
 // Drag & Drop na área de upload
@@ -385,7 +414,7 @@ imageUploadArea.addEventListener('drop', (e) => {
 });
 
 // Quando o arquivo é selecionado
-productImageInput.addEventListener('change', (e) => {
+productImage.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
         handleImageFile(file);
@@ -537,5 +566,34 @@ async function init() {
     filterProducts();
     updateCartUI();
 }
+
+// Utilitários
+function formatMoney(value) {
+    return 'R$ ' + value.toFixed(2).replace('.', ',');
+}
+
+// Lightbox
+function openLightbox(imgSrc) {
+    lightboxImg.src = imgSrc;
+    lightboxOverlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Travar scroll
+}
+
+function closeLightboxModal() {
+    lightboxOverlay.classList.remove('active');
+    document.body.style.overflow = ''; // Destravar scroll
+}
+
+closeLightbox.addEventListener('click', closeLightboxModal);
+lightboxOverlay.addEventListener('click', (e) => {
+    if (e.target === lightboxOverlay) closeLightboxModal();
+});
+
+// Fechar com ESC
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lightboxOverlay.classList.contains('active')) {
+        closeLightboxModal();
+    }
+});
 
 init();
