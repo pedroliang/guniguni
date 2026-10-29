@@ -1,7 +1,8 @@
+import os
 import http.client
 import json
 
-token = "sbp_9cb3069a3601ac183118513ed68481d9741d571a"
+token = os.environ["SUPABASE_ACCESS_TOKEN"]
 conn = http.client.HTTPSConnection("api.supabase.com")
 headers = {
     'Authorization': f'Bearer {token}',

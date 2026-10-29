@@ -1,8 +1,9 @@
+import os
 import http.client
 import json
 
 project_ref = "vnyplgxevpqegvhykwlj"
-token = "sbp_9cb3069a3601ac183118513ed68481d9741d571a"
+token = os.environ["SUPABASE_ACCESS_TOKEN"]
 
 # Script completo para garantir que a tabela e políticas existam
 sql_content = """

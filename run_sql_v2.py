@@ -1,8 +1,9 @@
+import os
 import http.client
 import json
 
 project_ref = "vnyplgxevpqegvhykwlj"
-token = "sbp_9cb3069a3601ac183118513ed68481d9741d571a"
+token = os.environ["SUPABASE_ACCESS_TOKEN"]
 sql_content = """
 CREATE TABLE IF NOT EXISTS public.products (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
